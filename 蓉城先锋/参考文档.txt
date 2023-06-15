@@ -1,0 +1,23 @@
+python下载3.74版本
+https://registry.npmmirror.com/binary.html?path=python/
+
+换源
+pip install pip -U
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+安装库
+pip install -r requirements.txt
+
+edge驱动webdriver，放入PATH路径，即python目录
+https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
+
+chrome驱动，记得修改代码
+https://registry.npmmirror.com/binary.html?path=chromedriver/&tdsourcetag=s_pcqq_aiomsg
+
+
+单个文件形式打包
+pyinstaller -F  auto_learn.py
+
+文件夹形式打包
+pyinstaller -D  auto_learn.py
+
