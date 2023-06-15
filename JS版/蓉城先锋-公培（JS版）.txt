@@ -1,0 +1,177 @@
+// ==UserScript==
+// @name        蓉城先锋 - cddyjy.com
+// @namespace   cddyjy
+// @match       https://new.cddyjy.com/member-education/net-school/classroom/videoInfo
+// @match       https://new.cddyjy.com/member-education/civil
+// @match       https://new.cddyjy.com/member-space/home
+// @match       *://new.cddyjy.com/member-education/*
+// @grant       none
+// @version     2.0
+// @author      bin
+// @description 2023-6-9 13:30:27 公培
+// @license MIT
+// ==/UserScript==
+
+    /**
+ *建议从此网址（https://new.cddyjy.com/member-space/home）开始
+ */
+
+(function(){
+  var checkInTime = null;
+     //设置点击按钮“学习”
+   function click_civil(){
+        var url0 = window.location.href;
+        url0 = url0.match('member-space/home')
+        if(url0 != null){
+            var civil_button = document.getElementsByClassName('menu-item ivu-col ivu-col-span-sm-6 ivu-col-span-xl-4 ivu-col-span-xxl-3')[0];
+            var oBtn = document.createElement("input");
+            oBtn.id = "btn";
+            oBtn.type = "button";
+            oBtn.value = "点击开始学习";
+            oBtn.style = 'color:white;background-color:#FF0000;border-style:none;border-radius:16px;padding:5px;margin:5px;cursor:pointer';
+            var isBtn = document.getElementById('btn');
+            console.log(isBtn);
+            if(isBtn == null){
+                civil_button.appendChild(oBtn);
+            }
+
+            // civil_button.click();
+        }
+    }
+
+  //在新窗口检查是否播放结束
+  function checkisFinish(){
+    window.onblur = null;
+    let oldadd=EventTarget.prototype.addEventListener
+    EventTarget.prototype.addEventListener=function (...args){
+        if(window.onblur!==null){
+            window.onblur=null;
+        }
+        if(args.length!==0&&args[0]==='visibilitychange'){
+            console.log('劫持visibilitychange成功，奥利给！')
+            return;
+        }
+        return oldadd.call(this,...args)
+    }
+    var url = window.location.href;
+    var pattern0 = /net-school/;
+    url = url.match(pattern0)
+    if(url != null){
+        //静音
+        var mute_button = document.getElementsByClassName("vjs-mute-control vjs-control vjs-button vjs-vol-3")[0]
+        if(mute_button != null){
+            mute_button.click();
+        }
+        //点击播放按钮
+        var play_button = document.getElementsByClassName("vjs-control-text")[2];
+        console.log(play_button.innerHTML)
+        if(play_button.innerHTML != 'Pause'){
+            play_button.click();
+        }
+        //点击继续观看按钮，网络波动引起
+        var continue_button = document.getElementsByClassName("ivu-btn ivu-btn-primary ivu-btn-large")[0];
+        if(continue_button != null){
+            continue_button.click();
+        }
+        //正则获取时长状态，未完成和已完成的情况不一样
+        var total_duration = document.getElementsByClassName("vjs-duration-display")[0].innerHTML;
+        var learned_time = document.getElementsByClassName('video-info-page-b-brc icon-group ivu-col')[0].lastElementChild.innerHTML;
+        var pattern = /(?<=>).*?(?=<)/;
+        learned_time = learned_time.match(pattern);
+        if (learned_time != null) {
+            console.log('ok')
+        } else {
+            //播放结束之后，返回到课程选择页面
+            window.open('https://new.cddyjy.com/member-education/civil','_self');
+        }
+    }
+  }
+
+    //检查学习状态
+    function check_model() {
+        var url1 = window.location.href;
+        url1 = url1.match('member-education/civil')
+        if(url1 != null){
+            //获取整体完成状态
+            var course_period = document.getElementsByClassName("course-period");
+            var learn_states = course_period[0].firstElementChild.lastElementChild.innerHTML;
+            if(learn_states == '已完成'){
+                console.log(learn_states);
+                return;
+            }
+            //判断进入必修课还是选修课
+            var course_required = document.getElementsByClassName("course-period-item course-period-item-1")
+            var learned_time0 = course_required[0].firstElementChild.lastElementChild.innerHTML;
+            var learned_time1 = course_required[0].lastElementChild.lastElementChild.innerHTML;
+            if (learned_time0==learned_time1) {
+                var model = document.getElementsByClassName('ivu-tabs-tab')[1].click();
+            }
+        }
+    }
+
+    //开始遍历当前页面的所有课程，通过未完成标签判断是否点击，点击跳转后关闭当前窗口
+    function start_learn(){
+        var url2 = window.location.href;
+        url2 = url2.match('member-education/civil')
+        if(url2 != null){
+            //获取课程元素列表
+            var allA = document.getElementsByClassName("civil-item-right");
+            //正则
+            var ragx =/去 学 习/g;
+            //开始遍历
+            if(allA.length>0){
+                //console.log(allA[0]);
+                for(var i=0;i<allA.length;i++){
+                    console.log(i);
+                    var isFinished = allA[i].firstElementChild.innerHTML;
+                    console.log(allA[i]);
+                    if(isFinished == '未完成'){
+                        //alert("去学习");
+                        allA[i].lastElementChild.lastElementChild.lastElementChild.click();
+                        window.close();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+ * 第一个任务
+ */
+    function task1 () {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                check_model();
+                resolve('done');
+            }, 1000);
+        });
+    }
+
+    /**
+ * 第二个任务
+ */
+    function task2 () {
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                start_learn();
+                resolve('done');
+            }, 3000)
+        });
+    }
+
+
+    /**
+ * 所有任务
+ */
+    async function allTasks (){
+        await task1();
+        await task2();
+    }
+
+    // 执行任务
+    checkInTime = setInterval(click_civil,parseInt(Math.random() * 1000 + 1000));
+    checkInTime = setTimeout(allTasks,parseInt(Math.random() * 1000 + 4000));
+    checkInTime = setInterval(checkisFinish,parseInt(Math.random() * 1000 + 4000));
+})();
